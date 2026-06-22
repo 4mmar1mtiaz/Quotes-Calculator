@@ -1,0 +1,352 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="theme-color" content="#0a3d62">
+<title>Pool Estimate</title>
+<style>
+  * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; margin: 0; padding: 0; }
+  :root {
+    --navy: #0a3d62;
+    --navy-dark: #072c47;
+    --blue: #1e88c7;
+    --green: #157f4a;
+    --red: #c0392b;
+    --gray: #eef2f5;
+    --line: #dde5ec;
+    --ink: #16242f;
+    --muted: #6b7a86;
+  }
+  html, body { height: 100%; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    background: var(--gray);
+    color: var(--ink);
+    padding-bottom: 132px;
+    -webkit-text-size-adjust: 100%;
+  }
+
+  /* HEADER */
+  header {
+    background: var(--navy);
+    color: #fff;
+    padding: 16px 16px 14px;
+    display: flex; align-items: center; justify-content: space-between;
+    position: sticky; top: 0; z-index: 20;
+  }
+  header h1 { font-size: 19px; font-weight: 700; letter-spacing: .4px; }
+  .gear {
+    background: rgba(255,255,255,.16);
+    border: none; color: #fff;
+    width: 44px; height: 44px; border-radius: 10px;
+    cursor: pointer; display: flex; align-items: center; justify-content: center;
+  }
+  .gear svg { width: 22px; height: 22px; fill: #fff; }
+
+  section { padding: 16px 14px 0; }
+  .label {
+    font-size: 13px; font-weight: 800; color: var(--muted);
+    text-transform: uppercase; letter-spacing: 1px;
+    margin: 2px 2px 10px;
+  }
+
+  /* PART CARD */
+  .part {
+    background: #fff; border: 1px solid var(--line); border-radius: 12px;
+    display: flex; align-items: stretch; margin-bottom: 10px; overflow: hidden;
+  }
+  .part .num {
+    font-size: 17px; font-weight: 800; color: #aab6c0;
+    width: 38px; display: flex; align-items: center; justify-content: center;
+    background: #f6f9fb; border-right: 1px solid var(--line);
+  }
+  .pbody { flex: 1; padding: 8px 12px; }
+  .pname {
+    width: 100%; border: none; outline: none; background: transparent;
+    font-size: 15px; font-weight: 600; color: var(--ink); padding: 6px 0;
+  }
+  .pname::placeholder { color: #b3bfc8; font-weight: 500; }
+  .dollar {
+    display: flex; align-items: center;
+    border-top: 1px solid var(--line); margin-top: 2px; padding-top: 4px;
+  }
+  .dollar span { font-size: 24px; font-weight: 800; color: var(--muted); }
+  .dollar input {
+    border: none; background: transparent; outline: none;
+    font-size: 26px; font-weight: 800; width: 100%; padding: 8px 4px; color: var(--ink);
+  }
+  .dollar .ptag { font-size: 14px; font-weight: 800; color: var(--green); white-space: nowrap; padding-left: 8px; }
+  .del {
+    background: #fbeceb; color: var(--red); border: none; border-left: 1px solid var(--line);
+    width: 54px; font-size: 26px; font-weight: 700; cursor: pointer;
+  }
+  .del:active { background: #f7dcd9; }
+
+  .addbtn {
+    width: 100%; background: #fff; color: var(--blue);
+    border: 2px dashed var(--blue); border-radius: 12px;
+    padding: 17px; font-size: 17px; font-weight: 800; cursor: pointer;
+  }
+  .addbtn:active { background: #eef6fc; }
+
+  /* LABOR STEPPER */
+  .stepper {
+    background: #fff; border: 1px solid var(--line); border-radius: 12px;
+    display: flex; align-items: center; justify-content: space-between; padding: 12px;
+  }
+  .step {
+    width: 68px; height: 68px; border-radius: 12px; border: none;
+    font-size: 38px; font-weight: 700; cursor: pointer; color: #fff;
+    display: flex; align-items: center; justify-content: center; line-height: 1;
+  }
+  .step.minus { background: #b08400; }
+  .step.plus  { background: var(--green); }
+  .step:active { filter: brightness(.92); }
+  .step:disabled { opacity: .35; }
+  .labormid { text-align: center; }
+  .labormid .hrs { font-size: 40px; font-weight: 800; line-height: 1; }
+  .labormid .hlbl { font-size: 12px; font-weight: 800; color: var(--muted); text-transform: uppercase; letter-spacing: 1px; }
+  .labormid .lprice { font-size: 16px; font-weight: 800; color: var(--green); margin-top: 4px; }
+
+  /* TOTAL FOOTER */
+  .footer {
+    position: fixed; left: 0; right: 0; bottom: 0; z-index: 30;
+    background: var(--green); color: #fff;
+    padding: 16px 18px calc(16px + env(safe-area-inset-bottom));
+    display: flex; align-items: center; justify-content: space-between;
+    box-shadow: 0 -3px 14px rgba(0,0,0,.18);
+  }
+  .footer .ftxt { font-size: 13px; font-weight: 800; text-transform: uppercase; letter-spacing: 1px; opacity: .92; }
+  .footer .ftotal { font-size: 44px; font-weight: 800; line-height: 1; }
+  .resetbtn {
+    background: rgba(255,255,255,.18); border: none; color: #fff;
+    border-radius: 10px; padding: 13px 16px; font-size: 15px; font-weight: 800; cursor: pointer;
+  }
+  .margin {
+    position: fixed; left: 14px; bottom: 112px; z-index: 31;
+    background: var(--ink); color: #fff; border-radius: 8px;
+    padding: 8px 12px; font-size: 13px; font-weight: 800; display: none;
+  }
+  .margin.show { display: block; }
+  .margin.bad { background: var(--red); }
+
+  /* SETTINGS PANEL */
+  .overlay { position: fixed; inset: 0; background: rgba(0,0,0,.5); z-index: 50; display: none; align-items: flex-end; }
+  .overlay.show { display: flex; }
+  .sheet {
+    background: #fff; width: 100%; border-radius: 18px 18px 0 0;
+    padding: 22px 18px calc(24px + env(safe-area-inset-bottom)); max-height: 90vh; overflow-y: auto;
+  }
+  .sheet h2 { font-size: 19px; margin-bottom: 14px; }
+  .srow { display: flex; align-items: center; justify-content: space-between; padding: 12px 0; border-bottom: 1px solid var(--line); gap: 12px; }
+  .srow label { font-size: 15px; font-weight: 600; }
+  .srow input[type=number] {
+    width: 110px; text-align: right; font-size: 18px; font-weight: 800;
+    border: 2px solid var(--line); border-radius: 8px; padding: 10px; outline: none;
+  }
+  .srow input:focus { border-color: var(--blue); }
+  .closebtn {
+    width: 100%; background: var(--navy); color: #fff; border: none;
+    border-radius: 12px; padding: 16px; font-size: 17px; font-weight: 800; margin-top: 18px; cursor: pointer;
+  }
+  .hint { font-size: 12px; color: var(--muted); margin: 2px 2px 12px; }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>Pool Estimate</h1>
+  <button class="gear" onclick="openSettings()" aria-label="Settings">
+    <svg viewBox="0 0 24 24"><path d="M19.14 12.94a7.07 7.07 0 0 0 0-1.88l2.03-1.58a.5.5 0 0 0 .12-.64l-1.92-3.32a.5.5 0 0 0-.61-.22l-2.39.96a7 7 0 0 0-1.62-.94l-.36-2.54a.5.5 0 0 0-.5-.42h-3.84a.5.5 0 0 0-.5.42l-.36 2.54a7 7 0 0 0-1.62.94l-2.39-.96a.5.5 0 0 0-.61.22L2.7 8.84a.5.5 0 0 0 .12.64l2.03 1.58a7.07 7.07 0 0 0 0 1.88L2.82 14.5a.5.5 0 0 0-.12.64l1.92 3.32a.5.5 0 0 0 .61.22l2.39-.96a7 7 0 0 0 1.62.94l.36 2.54a.5.5 0 0 0 .5.42h3.84a.5.5 0 0 0 .5-.42l.36-2.54a7 7 0 0 0 1.62-.94l2.39.96a.5.5 0 0 0 .61-.22l1.92-3.32a.5.5 0 0 0-.12-.64l-2.03-1.56ZM12 15.5A3.5 3.5 0 1 1 12 8.5a3.5 3.5 0 0 1 0 7Z"/></svg>
+  </button>
+</header>
+
+<!-- PARTS -->
+<section>
+  <div class="label">Parts</div>
+  <div id="parts"></div>
+  <button class="addbtn" onclick="addPart()">+ &nbsp;Add Part</button>
+</section>
+
+<!-- LABOR -->
+<section>
+  <div class="label">Labor Time</div>
+  <div class="stepper">
+    <button class="step minus" id="minusBtn" onclick="changeHours(-0.5)">&minus;</button>
+    <div class="labormid">
+      <div class="hrs" id="hrsVal">0.5</div>
+      <div class="hlbl">Hours</div>
+      <div class="lprice" id="laborPrice">$62</div>
+    </div>
+    <button class="step plus" onclick="changeHours(0.5)">+</button>
+  </div>
+</section>
+
+<div class="margin" id="marginBox"></div>
+
+<!-- TOTAL -->
+<div class="footer">
+  <div>
+    <div class="ftxt">Customer Price</div>
+    <div class="ftotal" id="grandTotal">$0</div>
+  </div>
+  <button class="resetbtn" onclick="resetAll()">New</button>
+</div>
+
+<!-- SETTINGS -->
+<div class="overlay" id="overlay">
+  <div class="sheet">
+    <h2>Owner Settings</h2>
+    <div class="hint">Set once. Techs do not need to touch this.</div>
+
+    <div class="srow"><label>Labor rate ($/hour)</label><input id="setRate" type="number" inputmode="decimal" value="125"></div>
+    <div class="srow"><label>Sales tax (%)</label><input id="setTax" type="number" inputmode="decimal" value="0"></div>
+
+    <div class="hint" style="margin-top:14px;">Parts markup by cost</div>
+    <div class="srow"><label>Under $50 (% markup)</label><input id="setM1" type="number" inputmode="decimal" value="500"></div>
+    <div class="srow"><label>$51 &ndash; $500 (% markup)</label><input id="setM2" type="number" inputmode="decimal" value="200"></div>
+    <div class="srow"><label>$501 and up (% markup)</label><input id="setM3" type="number" inputmode="decimal" value="50"></div>
+
+    <div class="srow"><label>Profit margin floor (%)</label><input id="setFloor" type="number" inputmode="decimal" value="30"></div>
+    <div class="srow"><label>Show margin to tech</label><input id="setShowMargin" type="checkbox"></div>
+
+    <button class="closebtn" onclick="closeSettings()">Done</button>
+  </div>
+</div>
+
+<script>
+const DEFAULTS = { rate:125, tax:0, m1:500, m2:200, m3:50, floor:30, showMargin:false };
+let cfg = loadCfg();
+let parts = [];   // [{name, cost}]
+let hours = 0.5;
+
+function loadCfg(){
+  try { return Object.assign({}, DEFAULTS, JSON.parse(localStorage.getItem('poolCfg')||'{}')); }
+  catch(e){ return Object.assign({}, DEFAULTS); }
+}
+function saveCfg(){ localStorage.setItem('poolCfg', JSON.stringify(cfg)); }
+
+function partPrice(cost){
+  if(!cost || cost<=0) return 0;
+  let mk;
+  if(cost < 50) mk = cfg.m1;
+  else if(cost <= 500) mk = cfg.m2;
+  else mk = cfg.m3;
+  return cost * (1 + mk/100);
+}
+function money(n){ return '$' + Math.round(n).toLocaleString('en-US'); }
+
+function addPart(){
+  parts.push({name:'', cost:''});
+  renderParts();
+  setTimeout(()=>{
+    const names = document.querySelectorAll('.pname');
+    if(names.length) names[names.length-1].focus();
+  }, 50);
+}
+
+function renderParts(){
+  const box = document.getElementById('parts');
+  box.innerHTML = '';
+  parts.forEach((p, i)=>{
+    const cost = parseFloat(p.cost)||0;
+    const card = document.createElement('div');
+    card.className = 'part';
+    card.innerHTML = `
+      <div class="num">${i+1}</div>
+      <div class="pbody">
+        <input class="pname" type="text" placeholder="Part name (optional)"
+               value="${escapeHtml(p.name)}" oninput="setName(${i}, this.value)">
+        <div class="dollar">
+          <span>$</span>
+          <input type="number" inputmode="decimal" placeholder="0"
+                 value="${p.cost}" oninput="setCost(${i}, this.value)">
+          <span class="ptag" data-i="${i}">${cost>0 ? 'Charge '+money(partPrice(cost)) : ''}</span>
+        </div>
+      </div>
+      <button class="del" onclick="removePart(${i})" aria-label="Remove">&times;</button>`;
+    box.appendChild(card);
+  });
+  recalc();
+}
+
+function escapeHtml(s){ return (s||'').replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+
+function setName(i, v){ parts[i].name = v; }
+function setCost(i, v){
+  parts[i].cost = v;
+  const cost = parseFloat(v)||0;
+  const tag = document.querySelector('.ptag[data-i="'+i+'"]');
+  if(tag) tag.textContent = cost>0 ? 'Charge '+money(partPrice(cost)) : '';
+  recalc();
+}
+function removePart(i){ parts.splice(i,1); renderParts(); }
+
+function changeHours(d){
+  hours = Math.max(0.5, Math.round((hours + d)*10)/10);
+  document.getElementById('hrsVal').textContent = hours;
+  document.getElementById('laborPrice').textContent = money(hours*cfg.rate);
+  document.getElementById('minusBtn').disabled = (hours<=0.5);
+  recalc();
+}
+
+function recalc(){
+  let partsCost = 0, partsSale = 0;
+  parts.forEach(p=>{ const c=parseFloat(p.cost)||0; partsCost+=c; partsSale+=partPrice(c); });
+  const tax = partsSale * (cfg.tax/100);
+  const labor = hours * cfg.rate;
+  const total = partsSale + tax + labor;
+  document.getElementById('grandTotal').textContent = money(total);
+
+  const box = document.getElementById('marginBox');
+  if(cfg.showMargin && partsSale>0){
+    const margin = (partsSale - partsCost)/partsSale*100;
+    box.textContent = 'Parts margin: ' + margin.toFixed(0) + '%';
+    box.classList.add('show');
+    box.classList.toggle('bad', margin < cfg.floor);
+  } else {
+    box.classList.remove('show');
+  }
+}
+
+function openSettings(){
+  document.getElementById('setRate').value = cfg.rate;
+  document.getElementById('setTax').value = cfg.tax;
+  document.getElementById('setM1').value = cfg.m1;
+  document.getElementById('setM2').value = cfg.m2;
+  document.getElementById('setM3').value = cfg.m3;
+  document.getElementById('setFloor').value = cfg.floor;
+  document.getElementById('setShowMargin').checked = cfg.showMargin;
+  document.getElementById('overlay').classList.add('show');
+}
+function closeSettings(){
+  cfg.rate = parseFloat(document.getElementById('setRate').value)||125;
+  cfg.tax  = parseFloat(document.getElementById('setTax').value)||0;
+  cfg.m1   = parseFloat(document.getElementById('setM1').value)||0;
+  cfg.m2   = parseFloat(document.getElementById('setM2').value)||0;
+  cfg.m3   = parseFloat(document.getElementById('setM3').value)||0;
+  cfg.floor= parseFloat(document.getElementById('setFloor').value)||0;
+  cfg.showMargin = document.getElementById('setShowMargin').checked;
+  saveCfg();
+  document.getElementById('overlay').classList.remove('show');
+  changeHours(0); renderParts();
+}
+
+function resetAll(){
+  if(parts.length===0 && hours===0.5) return;
+  if(confirm('Start a new estimate?')){
+    parts = []; hours = 0.5;
+    document.getElementById('hrsVal').textContent = hours;
+    document.getElementById('laborPrice').textContent = money(hours*cfg.rate);
+    document.getElementById('minusBtn').disabled = true;
+    renderParts();
+  }
+}
+
+changeHours(0);
+addPart();
+</script>
+</body>
+</html>
